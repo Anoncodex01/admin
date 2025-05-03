@@ -42,7 +42,12 @@ export function Transactions() {
     try {
       const response = await fetch(`${API_BASE_URL}/withdrawals`);
       if (!response.ok) {
-        throw new Error('Failed to fetch withdrawals');
+        const errorData = await response.json().catch(() => ({}));
+        if (errorData.errors && Array.isArray(errorData.errors)) {
+          errorData.errors.forEach((msg) => console.error('API error:', msg));
+          throw new Error(errorData.errors.join(' | '));
+        }
+        throw new Error(errorData.message || 'Failed to fetch withdrawals');
       }
       const data: WithdrawalsResponse = await response.json();
       setWithdrawals(data.withdrawals);
@@ -52,7 +57,7 @@ export function Transactions() {
       setTotalFees(totalFees);
     } catch (error) {
       console.error('Error fetching withdrawals:', error);
-      toast.error('Failed to load withdrawals');
+      toast.error(error instanceof Error ? error.message : 'Failed to load withdrawals');
     } finally {
       setIsLoading(false);
     }

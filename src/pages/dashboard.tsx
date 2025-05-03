@@ -66,12 +66,26 @@ export function Dashboard() {
 
       // Fetch creators data with time range
       const creatorsResponse = await fetch(`${API_BASE_URL}/creators?timeRange=${range}`);
-      if (!creatorsResponse.ok) throw new Error('Failed to fetch creators data');
+      if (!creatorsResponse.ok) {
+        const errorData = await creatorsResponse.json().catch(() => ({}));
+        if (errorData.errors && Array.isArray(errorData.errors)) {
+          (errorData.errors as string[]).forEach((msg) => console.error('API error:', msg));
+          throw new Error(errorData.errors.join(' | '));
+        }
+        throw new Error(errorData.message || 'Failed to fetch creators data');
+      }
       const creatorsData = await creatorsResponse.json();
       
       // Fetch withdrawals data with time range
       const withdrawalsResponse = await fetch(`${API_BASE_URL}/withdrawals?timeRange=${range}`);
-      if (!withdrawalsResponse.ok) throw new Error('Failed to fetch withdrawals data');
+      if (!withdrawalsResponse.ok) {
+        const errorData = await withdrawalsResponse.json().catch(() => ({}));
+        if (errorData.errors && Array.isArray(errorData.errors)) {
+          (errorData.errors as string[]).forEach((msg) => console.error('API error:', msg));
+          throw new Error(errorData.errors.join(' | '));
+        }
+        throw new Error(errorData.message || 'Failed to fetch withdrawals data');
+      }
       const withdrawalsData = await withdrawalsResponse.json();
 
       // Fallback: filter data for 'day' on frontend if backend does not support it

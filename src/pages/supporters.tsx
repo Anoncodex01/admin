@@ -28,7 +28,12 @@ export default function Supporters() {
         setLoading(true);
         const response = await fetch(`${API_BASE_URL}/supporters`);
         if (!response.ok) {
-          throw new Error('Failed to fetch supporters');
+          const errorData = await response.json().catch(() => ({}));
+          if (errorData.errors && Array.isArray(errorData.errors)) {
+            (errorData.errors as string[]).forEach((msg) => console.error('API error:', msg));
+            throw new Error(errorData.errors.join(' | '));
+          }
+          throw new Error(errorData.message || 'Failed to fetch supporters');
         }
         const data = await response.json();
         setSupporters(data);

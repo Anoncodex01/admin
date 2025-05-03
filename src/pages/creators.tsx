@@ -33,6 +33,10 @@ export function Creators() {
         });
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
+          if (errorData.errors && Array.isArray(errorData.errors)) {
+            (errorData.errors as string[]).forEach((msg) => console.error('API error:', msg));
+            throw new Error(errorData.errors.join(' | '));
+          }
           throw new Error(errorData.message || 'Failed to fetch creators');
         }
         const data = await response.json();

@@ -21,6 +21,11 @@ const dbConfig = {
   enableKeepAlive: true,
   keepAliveInitialDelay: 0,
   connectTimeout: 60000,
+<<<<<<< HEAD
+=======
+  acquireTimeout: 60000,
+  timeout: 60000,
+>>>>>>> 0969d4d (Improve error handling in transactions, supporters, dashboard, and creators pages)
   ssl: false, // Disable SSL since the server doesn't support it
   family: 4 // Force IPv4
 };
@@ -93,11 +98,21 @@ app.get('/creators', async (req, res) => {
 
     res.json(transformedCreators);
   } catch (error) {
-    console.error('Error fetching creators:', error);
-    res.status(500).json({ 
-      message: 'Failed to fetch creators', 
-      error: error.message 
-    });
+    if (error instanceof AggregateError) {
+      error.errors.forEach((e, i) => {
+        console.error(`Error in query ${i + 1}:`, e);
+      });
+      res.status(500).json({ 
+        message: 'Failed to fetch creators', 
+        errors: error.errors.map(e => e.message) 
+      });
+    } else {
+      console.error('Error fetching creators:', error);
+      res.status(500).json({ 
+        message: 'Failed to fetch creators', 
+        error: error.message 
+      });
+    }
   }
 });
 
