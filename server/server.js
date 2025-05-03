@@ -21,11 +21,6 @@ const dbConfig = {
   enableKeepAlive: true,
   keepAliveInitialDelay: 0,
   connectTimeout: 60000,
-<<<<<<< HEAD
-=======
-  acquireTimeout: 60000,
-  timeout: 60000,
->>>>>>> 0969d4d (Improve error handling in transactions, supporters, dashboard, and creators pages)
   ssl: false, // Disable SSL since the server doesn't support it
   family: 4 // Force IPv4
 };
