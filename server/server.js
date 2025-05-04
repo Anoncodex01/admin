@@ -1,8 +1,18 @@
+const path = require('path');
 const express = require('express');
 const mysql = require('mysql2/promise');
 const cors = require('cors');
 const adminRoutes = require('./routes/admin');
-require('dotenv').config();
+require('dotenv').config({ path: path.resolve(__dirname, '.env') });
+
+// ✅ DEBUG: Log environment variables to confirm loading
+console.log('✅ Loaded ENV Variables:', {
+  DB_HOST: process.env.DB_HOST,
+  DB_PORT: process.env.DB_PORT,
+  DB_USER: process.env.DB_USER,
+  DB_NAME: process.env.DB_NAME,
+  NODE_ENV: process.env.NODE_ENV
+});
 
 const app = express();
 const port = process.env.PORT || 3000;
