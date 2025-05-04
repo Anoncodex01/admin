@@ -3,15 +3,19 @@ const mysql = require('mysql2/promise');
 const cors = require('cors');
 const adminRoutes = require('./routes/admin');
 require('dotenv').config();
-console.log('DB_HOST:', process.env.DB_HOST, 'DB_PORT:', process.env.DB_PORT); // Debug log
 
 const app = express();
 const port = process.env.PORT || 3000;
 
+// Sanitize and log DB env values
+const DB_HOST = process.env.DB_HOST?.trim();
+const DB_PORT = parseInt(process.env.DB_PORT?.trim() || '3306', 10);
+console.log('Resolved DB_HOST:', JSON.stringify(DB_HOST), 'DB_PORT:', DB_PORT);
+
 // Database connection configuration
 const dbConfig = {
-  host: process.env.DB_HOST,
-  port: process.env.DB_PORT,
+  host: DB_HOST,
+  port: DB_PORT,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
@@ -21,8 +25,8 @@ const dbConfig = {
   enableKeepAlive: true,
   keepAliveInitialDelay: 0,
   connectTimeout: 60000,
-  ssl: false, // Disable SSL since the server doesn't support it
-  family: 4 // Force IPv4
+  ssl: false,
+  family: 4 // IPv4 only
 };
 
 // Create a connection pool
@@ -31,42 +35,12 @@ const pool = mysql.createPool(dbConfig);
 // Test database connection
 pool.getConnection()
   .then(connection => {
-    console.log('Successfully connected to the database');
+    console.log('✅ Successfully connected to the database');
     connection.release();
   })
   .catch(err => {
-    console.error('Database connection error:', err);
+    console.error('❌ Database connection error:', err);
   });
-
-// Configure CORS
-app.use(cors({
-  origin: ['https://nisapoti.co.tz', 'http://nisapoti.co.tz', 'http://localhost:3000', 'http://localhost:5173'],
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true
-}));
-
-app.use(express.json());
-
-// Mount admin routes at root
-app.use('/admin', adminRoutes);
-
-// Function to handle database queries with better error handling
-async function queryDatabase(query, params = []) {
-  let connection;
-  try {
-    connection = await pool.getConnection();
-    const [results] = await connection.query(query, params);
-    return results;
-  } catch (error) {
-    console.error('Database query error:', error);
-    throw error;
-  } finally {
-    if (connection) {
-      connection.release();
-    }
-  }
-}
 
 // Get all creators with error handling
 app.get('/creators', async (req, res) => {
